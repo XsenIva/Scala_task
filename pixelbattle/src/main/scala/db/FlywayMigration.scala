@@ -1,4 +1,4 @@
-package resources
+package db
 import org.flywaydb.core.Flyway
 
 object FlywayMigration {
@@ -9,6 +9,7 @@ object FlywayMigration {
         "admin", 
         "password"
       )
+      .locations("classpath:migrations") 
       .load()
     
     flyway.migrate() 

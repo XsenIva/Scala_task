@@ -21,6 +21,10 @@ lazy val root = project
       "org.tpolecat" %% "doobie-hikari" % "1.0.0-RC2", 
       "org.tpolecat" %% "doobie-postgres" % "1.0.0-RC2",
 
+       "io.circe" %% "circe-core" % "0.14.6",
+       "io.circe" %% "circe-generic" % "0.14.6",
+       "io.circe" %% "circe-parser" % "0.14.6",
+
 
       // "com.github.swagger-akka-http" %% "swagger-akka-http" % "2.11.1",
       "io.swagger.core.v3" % "swagger-core" % "2.2.8",
@@ -29,9 +33,11 @@ lazy val root = project
 
 
       "org.flywaydb" % "flyway-core" % "9.16.0",
+      "ch.qos.logback" % "logback-classic" % "1.4.14",
+      // "org.slf4j" % "slf4j-simple" % "2.0.13",
 
       "org.scalatest" %% "scalatest" % "3.2.15" % Test,
-            "org.scalameta" %% "munit" % "1.0.0" % Test,
+      "org.scalameta" %% "munit" % "1.0.0" % Test,
       //  "org.mockito" %% "mockito-scala" % "1.17.12" % Test 
 
     )

@@ -1,4 +1,4 @@
-package resources
+package db
 import cats.effect.{IO, Resource}
 import doobie.hikari.HikariTransactor
 import doobie.util.ExecutionContexts
