@@ -1,4 +1,4 @@
-package db.repository
+package repository
 
 
 import cats.effect.IO
@@ -12,8 +12,8 @@ import models.Team
 trait TeamRepository{
   def findAll(): IO[List[Team]]
   // def findById(id: Long): IO[Option[User]]
-  def create(team: Team): IO[Int]
-  def delete(id: Long): IO[Int]
+  def create(team: Team): IO[Team]
+  def delete(id: Option[Long]): IO[Int]
 }
 
 
@@ -29,12 +29,12 @@ class TeamRepositoryImpl(xa: Transactor[IO]) extends TeamRepository{
      .to[List].transact(xa)
 
    
-  override def create(team: Team): IO[Option[Long]] = 
+  override def create(team: Team): IO[Team] = 
     sql"""
       INSERT INTO teams (team_name, player_id)
       VALUES (${team.name}, ${team.lead})
     """.update
-       .withUniqueGeneratedKeys[Long]("id")
+       .withUniqueGeneratedKeys[Option[Long]]("id")
        .map(id => team.copy(id = id))
        .transact(xa)
 

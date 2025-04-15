@@ -1,4 +1,4 @@
-package db.repository
+package repository
 
 import cats.effect.IO
 
@@ -14,9 +14,9 @@ import doobie.implicits.javatime._
 trait GameRepository{
   def findAll(): IO[List[Game]]
   // def findById(id: Long): IO[Option[User]]
-  def create(game: Game): IO[Int]
+  def create(game: Game):  IO[Game] 
   // def update(game: Game): IO[Int]
-  def delete(id: Long): IO[Int]
+  def delete(id: Option[Long]): IO[Int]
 }
 
 class GameRepositoryImpl(xa: Transactor[IO]) extends GameRepository{
@@ -24,20 +24,24 @@ class GameRepositoryImpl(xa: Transactor[IO]) extends GameRepository{
      sql"""
       SELECT id, status_game, creation_time 
       FROM games
-      """.query[(Long, String, LocalDateTime)]
+      """.query[(Option[Long], String, LocalDateTime)]
       .map{case (id, status_game, creation_time) =>
       Game(id = id, status = status_game, creationtime = creation_time)}
-      .to[List].transact(xa)
+      .to[List]
+      .transact(xa)
 
        
-  override def create(game: Game): IO[Int] = 
+  override def create(game: Game): IO[Game] = 
     sql"""
       INSERT INTO games (status_game, creation_time)
       VALUES (${game.status}, ${game.creationtime})
-    """.update.run.transact(xa)
+    """.update
+       .withUniqueGeneratedKeys[Option[Long]]("id")
+       .map(id => game.copy(id = id))
+       .transact(xa)
 
 
-  override def delete(id: Long): IO[Int] = 
+  override def delete(id: Option[Long]): IO[Int] = 
     sql"""
       DELETE FROM games WHERE id = $id
     """.update.run.transact(xa)

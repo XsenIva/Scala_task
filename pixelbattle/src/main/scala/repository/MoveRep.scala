@@ -1,4 +1,4 @@
-package db.repository
+package repository
 
 
 import cats.effect.IO
@@ -15,8 +15,8 @@ import doobie.implicits.javatime._
 trait MoveRepository{
   def findAll(): IO[List[Move]]
   // def findById(id: Long): IO[Option[User]]
-  def create(move: Move): IO[Int]
-  def delete(id: Long): IO[Int]
+  def create(move: Move): IO[Move]
+  def delete(id: Option[Long]): IO[Int]
 }
 
 class MoveRepositoryImpl(xa: Transactor[IO]) extends MoveRepository{
@@ -26,7 +26,7 @@ class MoveRepositoryImpl(xa: Transactor[IO]) extends MoveRepository{
       SELECT id, game_id, player_id,
       x_coordinate, y_coordinate, color, move_time
       FROM moves
-    """.query[(Long, Long,Long,Int, Int, String, LocalDateTime)]
+    """.query[(Option[Long], Long,Long,Int, Int, String, LocalDateTime)]
      .map{case (id, game_id, player_id,
                 x_coordinate, y_coordinate,
                 color, move_time) =>
@@ -35,17 +35,20 @@ class MoveRepositoryImpl(xa: Transactor[IO]) extends MoveRepository{
      .to[List].transact(xa)
 
        
-  override def create(move: Move): IO[Int] = 
+  override def create(move: Move): IO[Move] = 
     sql"""
       INSERT INTO moves (game_id, player_id,
       x_coordinate, y_coordinate, color, move_time)
       VALUES (${move.gameid}, ${move.playerid}, 
               ${move.x}, ${move.y},
               ${move.color}, ${move.creationtime})
-    """.update.run.transact(xa)
+    """.update
+       .withUniqueGeneratedKeys[Option[Long]]("id")
+       .map(id => move.copy(id = id))
+       .transact(xa)
 
 
-  override def delete(id: Long): IO[Int] = 
+  override def delete(id: Option[Long]): IO[Int] = 
     sql"""
       DELETE FROM moves WHERE id = $id
     """.update.run.transact(xa) 
