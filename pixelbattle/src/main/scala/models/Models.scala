@@ -15,11 +15,18 @@ case class Team(
   lead: Long
 )
 
-case class Session(
+case class Move(
   id: Option[Long],
+  gameid: Long,
   playerid: Long,
-  token: String,
-  creationtime: LocalDateTime,
-  expirationtime: LocalDateTime
-
+  x: Int,
+  y: Int,
+  color: String,
+  creationtime: LocalDateTime
 )
+
+case class Game(
+  id: Option[Long],
+  status: String,
+  creationtime: LocalDateTime
+) 

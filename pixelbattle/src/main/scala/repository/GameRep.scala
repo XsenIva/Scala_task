@@ -13,38 +13,62 @@ import doobie.implicits.javatime._
 
 trait GameRepository{
   def findAll(): IO[List[Game]]
-  // def findById(id: Long): IO[Option[User]]
+  def findById(id: Option[Long]): IO[Option[Game]]
   def create(game: Game):  IO[Game] 
-  // def update(game: Game): IO[Int]
   def delete(id: Option[Long]): IO[Int]
 }
 
 class GameRepositoryImpl(xa: Transactor[IO]) extends GameRepository{
+
  override def findAll(): IO[List[Game]] = 
      sql"""
-      SELECT id, status_game, creation_time 
+      SELECT id, status_game, creation_date 
       FROM games
       """.query[(Option[Long], String, LocalDateTime)]
-      .map{case (id, status_game, creation_time) =>
-      Game(id = id, status = status_game, creationtime = creation_time)}
+      .map{case (id, status_game, creation_date) =>
+      Game(id = id, status = status_game, creationtime = creation_date)}
       .to[List]
       .transact(xa)
+
+
+  override def findById(id: Option[Long]): IO[Option[Game]] = {
+    id match {
+      case Some(gameId) =>
+        sql"""
+          SELECT id, status_game, creation_date 
+          FROM games
+          WHERE id = $gameId
+        """.query[(Option[Long], String, LocalDateTime)]
+           .map{case (id, status_game, creation_date) =>
+                Game(id = id, status = status_game, creationtime = creation_date)}
+           .option 
+           .transact(xa)
+      case None => IO.pure(None)
+    }
+  }
 
        
   override def create(game: Game): IO[Game] = 
     sql"""
-      INSERT INTO games (status_game, creation_time)
+      INSERT INTO games (status_game, creation_date)
       VALUES (${game.status}, ${game.creationtime})
     """.update
-       .withUniqueGeneratedKeys[Option[Long]]("id")
-       .map(id => game.copy(id = id))
+       .withUniqueGeneratedKeys[Long]("id")
+       .map(id => game.copy(id = Some(id)))
        .transact(xa)
 
 
-  override def delete(id: Option[Long]): IO[Int] = 
-    sql"""
-      DELETE FROM games WHERE id = $id
-    """.update.run.transact(xa)
-
+  override def delete(id: Option[Long]): IO[Int] = {
+    id match {
+      case Some(gameId) =>
+        sql"""
+          DELETE FROM games 
+          WHERE id = $gameId
+        """.update
+           .run
+           .transact(xa)
+      case None => IO.pure(0)
+    }
+  }
 }
 

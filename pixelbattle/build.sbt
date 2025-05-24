@@ -1,4 +1,5 @@
 val scala3Version = "3.6.3"
+val catsEffectVersion = "3.3.14"
 
 lazy val root = project
   .in(file("."))
@@ -38,6 +39,9 @@ lazy val root = project
 
       "org.scalatest" %% "scalatest" % "3.2.15" % Test,
       "org.scalameta" %% "munit" % "1.0.0" % Test,
+      "org.typelevel" %% "cats-effect" % catsEffectVersion,
+      "org.typelevel" %% "cats-effect-testing-scalatest" % "1.4.0" % Test,
+      "com.h2database" % "h2" % "2.2.224" % Test
       //  "org.mockito" %% "mockito-scala" % "1.17.12" % Test 
 
     )
