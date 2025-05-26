@@ -3,6 +3,11 @@ package service
 import repository.UserRepository
 import models.{User, Team}
 import cats.effect.unsafe.implicits.global
+import java.time.LocalDateTime
+import java.security.MessageDigest
+import java.util.Base64
+
+case class LeaderboardEntry(userId: Long, username: String, score: Int)
 
 trait UserService {
   def registerUser(name: String, email: String, passwordHash: String): Either[String, User]

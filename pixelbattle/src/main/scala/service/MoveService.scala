@@ -6,22 +6,34 @@ import models.Move
 import cats.effect.unsafe.implicits.global
 import cats.effect.IO
 
-enum Color(val hex: String) {
-  case Red   extends Color("#FF0000")
-  case Green extends Color("#00FF00")
-  case Blue  extends Color("#0000FF")
-  case White extends Color("#FFFFFF")
-  case Black extends Color("#000000")
+sealed trait Color {
+  def hex: String
 }
 
-enum MoveError {
-  case InvalidCoordinates
-  case InvalidColor
-  case TimeLimit
-  case GameNotFound
-  case PlayerNotFound
-  case DatabaseError(message: String)
+object Color {
+  case object Red extends Color { val hex = "#FF0000" }
+  case object Green extends Color { val hex = "#00FF00" }
+  case object Blue extends Color { val hex = "#0000FF" }
+  case object White extends Color { val hex = "#FFFFFF" }
+  case object Black extends Color { val hex = "#000000" }
+
+  val values: Seq[Color] = Seq(Red, Green, Blue, White, Black)
+
+  def fromHex(hex: String): Option[Color] =
+    values.find(_.hex.equalsIgnoreCase(hex))
 }
+
+sealed trait MoveError
+
+object MoveError {
+  case object InvalidCoordinates extends MoveError
+  case object InvalidColor extends MoveError
+  case object TimeLimit extends MoveError
+  case object GameNotFound extends MoveError
+  case object PlayerNotFound extends MoveError
+  case class DatabaseError(message: String) extends MoveError
+}
+
 
 trait MoveService {
   def makeMove(gameid: Long, playerid: Long, x: Int, y: Int, color: String): Either[MoveError, Move]

@@ -7,15 +7,13 @@ import repository._
 import models._
 import cats.effect.unsafe.implicits.global
 
-val xa: Transactor[IO] = 
-    Transactor.fromDriverManager[IO](
-        "org.h2.Driver",
-        "jdbc:h2:mem:userrepodb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
-        "sa",
-        ""
-    )
-
 class UserRepositoryTest extends AnyFunSuite with BeforeAndAfterEach {
+  private val xa: Transactor[IO] = Transactor.fromDriverManager[IO](
+    "org.h2.Driver",
+    "jdbc:h2:mem:userrepodb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
+    "sa",
+    ""
+  )
 
   private var testUserCounter = 0
 
@@ -160,37 +158,3 @@ class UserRepositoryTest extends AnyFunSuite with BeforeAndAfterEach {
     delete.unsafeRunSync()
   }
 }
-
-// class TeamRepositoryTest extends AnyFunSuite with BeforeAndAfterEach {
- 
-//   override def afterEach(): Unit = {
-//     sql"DELETE FROM teams".update.run.transact(xa).unsafeRunSync()
-//   } 
-
-//   val repo: TeamRepository = new TeamRepositoryImpl(xa)
-  
-//   test("create team") {
-//      val create: IO[Unit] = for {
-//        team <- repo.create(Team(None, "test_team", 1))
-//        resp  <- repo.findById(team.id)
-//        _ <- IO {
-//         assert(resp.isDefined, "Team should exist")
-//         assert(resp.get.name == "test_team", "Team name should match")
-//       }
-//     } yield ()
-//     create.unsafeRunSync()
-//   }
-
-//   test ("delete team"){
-//     val delete: IO[Unit] = for  {
-//       team <- repo.create(Team(None,"test_team", 1))
-//       resp <- repo.findById(team.id)
-//       res  <- repo.delete(resp.get.id)
-//       _ <- IO{
-//         assert(res == 1)
-//       }
-//     } yield ()
-//     delete.unsafeRunSync()
-//   }
-  
-// }

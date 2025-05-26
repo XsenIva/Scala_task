@@ -26,7 +26,7 @@ object Main extends IOApp {
       } 
   }
 
-  // Главный метод
+
   override def run(args: List[String]): IO[ExitCode] = {
     createTransactor().use { transactor =>
       for {

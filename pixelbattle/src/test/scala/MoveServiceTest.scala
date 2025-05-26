@@ -9,6 +9,7 @@ import service._
 import repository._
 import models._
 
+
 class MoveServiceTest extends AnyFunSuite with BeforeAndAfterEach {
   
   val xa: Transactor[IO] = Transactor.fromDriverManager[IO](
@@ -25,7 +26,7 @@ class MoveServiceTest extends AnyFunSuite with BeforeAndAfterEach {
     moveRepository, 
     gameRepository, 
     userRepository,
-    Duration.ofSeconds(1) // Use 1 second for testing
+    Duration.ofSeconds(1) 
   )
 
   private var testUserCounter = 0
@@ -261,11 +262,10 @@ class MoveServiceTest extends AnyFunSuite with BeforeAndAfterEach {
     val user = createTestUser()
     val game = createTestGame()
     
-    // Create two moves
     val firstMove = moveService.makeMove(game.id.get, user.id.get, 1, 1, Color.Red.hex)
     assert(firstMove.isRight)
     
-    Thread.sleep(1100) // Wait just over 1 second
+    Thread.sleep(1100) 
     
     val secondMove = moveService.makeMove(game.id.get, user.id.get, 2, 2, Color.Blue.hex)
     assert(secondMove.isRight)
@@ -281,7 +281,7 @@ class MoveServiceTest extends AnyFunSuite with BeforeAndAfterEach {
     val game = createTestGame()
     
     val beforeMove = LocalDateTime.now()
-    Thread.sleep(1000) // Ensure time difference
+    Thread.sleep(1000) 
     
     val moveResult = moveService.makeMove(game.id.get, user.id.get, 5, 5, Color.Red.hex)
     assert(moveResult.isRight)
