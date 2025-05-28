@@ -7,6 +7,8 @@ import {
   Center,
   Spinner,
   Text,
+  Heading,
+  VStack,
 } from '@chakra-ui/react';
 import { getCurrentGame, placePixel } from '../../api';
 import type { GameField, Pixel } from '../../types';
@@ -192,35 +194,64 @@ export const GameBoard: React.FC = () => {
   }
 
   return (
-    <Box p={4}>
-      <Center mb={4}>
-        <Text fontSize="2xl" fontWeight="bold">Pixel Battle</Text>
-      </Center>
-      <Center>
-        <Box position="relative" borderWidth={2} borderColor="gray.200" borderRadius="lg" overflow="hidden">
+    <Box 
+      w="full" 
+      display="flex" 
+      flexDirection="column" 
+      alignItems="center" 
+      justifyContent="center"
+      minH="full"
+    >
+      <VStack spacing={8} align="center" w="full">
+        <Heading as="h1" size="2xl">
+        ⚔️ Pixel Battle 🛡️
+        </Heading>
+
+        <Box>
+          <Text mb={4} fontSize="xl" fontWeight="medium" textAlign="center">
+            Тыкни цвет:
+          </Text>
+          <HStack spacing={3} justify="center">
+            {COLORS.map((color) => (
+              <Button
+                key={color}
+                bg={color}
+                w="50px"
+                h="50px"
+                onClick={() => setSelectedColor(color)}
+                border={color === selectedColor ? '3px solid black' : '1px solid gray.200'}
+                _hover={{ 
+                  opacity: 0.8,
+                  transform: 'scale(1.1)',
+                }}
+                transition="all 0.2s"
+                borderRadius="md"
+              />
+            ))}
+          </HStack>
+        </Box>
+
+        <Box
+          position="relative"
+          borderWidth={2}
+          borderColor="gray.200"
+          borderRadius="xl"
+          overflow="hidden"
+          boxShadow="2xl"
+          bg="white"
+          p={4}
+        >
           <canvas
             ref={canvasRef}
-            style={{ display: 'block' }}
+            style={{ 
+              display: 'block',
+            }}
             onClick={handleCanvasClick}
             onMouseMove={handleCanvasMouseMove}
             onMouseLeave={handleCanvasMouseLeave}
           />
         </Box>
-      </Center>
-      <HStack mt={4} spacing={2} justify="center">
-        {COLORS.map((color) => (
-          <Button
-            key={color}
-            bg={color}
-            w="40px"
-            h="40px"
-            onClick={() => setSelectedColor(color)}
-            border={color === selectedColor ? '2px solid black' : 'none'}
-            _hover={{ opacity: 0.8 }}
-            borderRadius="md"
-          />
-        ))}
-      </HStack>
+      </VStack>
     </Box>
   );
 }; 

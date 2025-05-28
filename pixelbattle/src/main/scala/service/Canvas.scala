@@ -11,8 +11,8 @@ case class GameField(
 )
 
 object GameField {
-  val DefaultWidth: Int = 100
-  val DefaultHeight: Int = 100
+  val DefaultWidth: Int = 60
+  val DefaultHeight: Int = 35
   val DefaultColor: String = "#FFFFFF"
 
   def defaultField(): GameField = {
