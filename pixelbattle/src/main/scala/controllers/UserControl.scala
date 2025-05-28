@@ -11,6 +11,12 @@ import io.circe.parser._
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import akka.http.scaladsl.server.ExceptionHandler
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.media.{Content, Schema}
+import io.swagger.v3.oas.annotations.tags.Tag
+
 
 
 case class RegisterRequest(
@@ -22,7 +28,7 @@ case class LoginRequest(
   email: String, 
   password: String)
 
-
+// @Tag(name = "Player", description = "Player endpoints")
 class PlayerRoutes(gameService: GameService, userService: UserService) {
 
   val routes: Route = pathPrefix("players") {

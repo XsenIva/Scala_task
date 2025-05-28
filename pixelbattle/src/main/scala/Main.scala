@@ -16,6 +16,9 @@ import scala.util.{Success, Failure}
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives
 import ch.megard.akka.http.cors.scaladsl.settings.CorsSettings
 import akka.http.scaladsl.model.HttpMethods._
+import swagger.SwaggerDocumentation
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.directives.ContentTypeResolver.Default
 
 object Main extends IOApp {
 
@@ -33,14 +36,41 @@ object Main extends IOApp {
     val corsSettings = CorsSettings.defaultSettings
       .withAllowedMethods(List(GET, POST, PUT, DELETE, OPTIONS))
       .withAllowCredentials(true)
-      .withMaxAge(Some(86400L)) // 24 часа в секундах
+      .withMaxAge(Some(86400L))
 
-    val corsRoutes = CorsDirectives.cors(corsSettings) {
-      routes
+    // Create Swagger documentation service
+    val swaggerDoc = new SwaggerDocumentation()
+    
+    // Serve Swagger UI static resources
+    val swaggerUiRoute = {
+      pathPrefix("swagger") {
+        pathEndOrSingleSlash {
+          getFromResource("swagger-ui/index.html")
+        } ~
+        getFromResourceDirectory("swagger-ui")
+      }
+    }
+
+    // API documentation routes
+    val apiDocsRoute = {
+      pathPrefix("api-docs") {
+        path("swagger.json") {
+          get {
+            complete(swaggerDoc.swaggerJson)
+          }
+        }
+      }
+    }
+    
+    // Combine all routes
+    val allRoutes = CorsDirectives.cors(corsSettings) {
+      routes ~ 
+      swaggerUiRoute ~
+      apiDocsRoute
     }
 
     Http().newServerAt("localhost", 8080)
-      .bind(corsRoutes)
+      .bind(allRoutes)
   }
 
   override def run(args: List[String]): IO[ExitCode] = {

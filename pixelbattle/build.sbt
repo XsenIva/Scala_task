@@ -3,6 +3,7 @@ val catsEffectVersion = "3.5.3"
 val akkaVersion = "2.9.2"
 val akkaHttpVersion = "10.6.2"
 val circeVersion = "0.14.7"
+val swaggerVersion = "2.2.8"
 
 lazy val root = project
   .in(file("."))
@@ -25,9 +26,14 @@ lazy val root = project
       "org.tpolecat" %% "doobie-postgres" % "1.0.0-RC2",
 
       // Swagger
-      "io.swagger.core.v3" % "swagger-core" % "2.2.8",
-      "io.swagger.core.v3" % "swagger-annotations" % "2.2.8",
-      "io.swagger.core.v3" % "swagger-models" % "2.2.8",
+      "com.github.swagger-akka-http" %% "swagger-akka-http" % "2.10.0",
+      "io.swagger.core.v3" % "swagger-core" % swaggerVersion,
+      "io.swagger.core.v3" % "swagger-annotations" % swaggerVersion,
+      "io.swagger.core.v3" % "swagger-models" % swaggerVersion,
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.15.2",
+      "org.webjars" % "webjars-locator" % "0.46",
+      "org.webjars" % "swagger-ui" % "4.15.5",
+      "org.webjars.npm" % "swagger-ui-dist" % "4.15.5",
 
       // Flyway & logging
       "org.flywaydb" % "flyway-core" % "9.16.0",
