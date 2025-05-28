@@ -9,17 +9,15 @@ import doobie.implicits._
 import models.Game
 import java.time.LocalDateTime
 import cats.effect.Resource
+import doobie.hikari.HikariTransactor
 
-class GameRepositorySpec extends AsyncFreeSpec with AsyncIOSpec with Matchers with TestTransactor {
-  // Create test table before each test
-  override def setupDatabase(xa: Transactor[IO]): IO[Unit] = {
+class GameRepositorySpec extends AsyncFreeSpec with AsyncIOSpec with Matchers with TestitTransactor {
+  // Clean up test data before each test
+  override def setupDatabase(xa: HikariTransactor[IO]): IO[Unit] = {
     sql"""
-      DROP TABLE IF EXISTS games;
-      CREATE TABLE games (
-        id BIGSERIAL PRIMARY KEY,
-        status_game VARCHAR NOT NULL,
-        creation_date TIMESTAMP NOT NULL
-      )
+      DELETE FROM team_game WHERE game_id IN (SELECT id FROM games WHERE status_game LIKE 'TEST_%');
+      DELETE FROM moves WHERE game_id IN (SELECT id FROM games WHERE status_game LIKE 'TEST_%');
+      DELETE FROM games WHERE status_game LIKE 'TEST_%';
     """.update.run.transact(xa).void
   }
 
@@ -33,7 +31,7 @@ class GameRepositorySpec extends AsyncFreeSpec with AsyncIOSpec with Matchers wi
 
   "GameRepository" - {
     "should create and retrieve a game" in {
-      val testGame = Game(None, "ACTIVE", LocalDateTime.now())
+      val testGame = Game(None, "TEST_ACTIVE", LocalDateTime.now())
       
       withRepository { repository =>
         for {
@@ -47,25 +45,26 @@ class GameRepositorySpec extends AsyncFreeSpec with AsyncIOSpec with Matchers wi
       }
     }
 
-    "should find all games" in {
-      val testGame1 = Game(None, "ACTIVE", LocalDateTime.now())
-      val testGame2 = Game(None, "FINISHED", LocalDateTime.now())
+    "should find all test games" in {
+      val testGame1 = Game(None, "TEST_ACTIVE", LocalDateTime.now())
+      val testGame2 = Game(None, "TEST_FINISHED", LocalDateTime.now())
       
       withRepository { repository =>
         for {
           _ <- repository.create(testGame1)
           _ <- repository.create(testGame2)
           allGames <- repository.findAll()
+          testGames = allGames.filter(_.status.startsWith("TEST_"))
         } yield {
-          allGames.length shouldBe 2
-          allGames.exists(_.status == "ACTIVE") shouldBe true
-          allGames.exists(_.status == "FINISHED") shouldBe true
+          testGames.length shouldBe 2
+          testGames.exists(_.status == "TEST_ACTIVE") shouldBe true
+          testGames.exists(_.status == "TEST_FINISHED") shouldBe true
         }
       }
     }
 
     "should delete a game" in {
-      val testGame = Game(None, "ACTIVE", LocalDateTime.now())
+      val testGame = Game(None, "TEST_ACTIVE", LocalDateTime.now())
       
       withRepository { repository =>
         for {

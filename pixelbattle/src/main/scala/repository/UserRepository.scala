@@ -28,27 +28,50 @@ class UserRepositoryImpl(xa: Transactor[IO]) extends UserRepository {
   override def findById(id: Option[Long]): IO[Option[User]] = {
     id match {
       case Some(userId) =>
-        sql"""
+        println(s"Looking up user with ID: $userId")
+        val query = sql"""
           SELECT id, username, logine, passwd 
           FROM players 
           WHERE id = $userId
-        """.query[(Option[Long], String, String, String)]
+        """
+        println(s"Executing SQL query: ${query.query[(Option[Long], String, String, String)].sql}")
+        
+        query.query[(Option[Long], String, String, String)]
            .map{case (id, username, logine, password) =>
              User(id = id, name = username, email = logine, passwordHash = password)}
            .option 
            .transact(xa)
-      case None => IO.pure(None)
+           .map { result =>
+             println(s"Database lookup result for user $userId: $result")
+             result
+           }
+      case None => 
+        println("findById called with None")
+        IO.pure(None)
     }
   }
 
-  override def create(user: User): IO[User] = 
-    sql"""
+  override def create(user: User): IO[User] = {
+    println(s"Starting database transaction for user creation: ${user}")
+    val insertQuery = sql"""
       INSERT INTO players (username, logine, passwd)
       VALUES (${user.name}, ${user.email}, ${user.passwordHash})
-    """.update
+    """
+    println(s"Attempting to insert user into database")
+    
+    insertQuery.update
        .withUniqueGeneratedKeys[Long]("id")
-       .map(id => user.copy(id = Some(id)))
+       .map { id => 
+         println(s"Generated ID for new user: $id")
+         user.copy(id = Some(id))
+       }
        .transact(xa)
+       .handleErrorWith { error =>
+         println(s"Database error during user creation: ${error.getMessage}")
+         error.printStackTrace()
+         IO.raiseError(error)
+       }
+  }
 
   override def update(user: User): IO[Int] = {
     user.id match {

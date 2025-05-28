@@ -32,24 +32,38 @@ class GameServiceImpl(
 
   private var currentGameId: Option[Long] = None
 
-  override def getCurrentGameId: Option[Long] = currentGameId
+  override def getCurrentGameId: Option[Long] = {
+    println(s"Getting current game ID: $currentGameId")
+    if (currentGameId.isEmpty) {
+      println("No current game ID, creating new game")
+      createGame()
+      println(s"Created new game, ID is now: $currentGameId")
+    }
+    currentGameId
+  }
 
   override def createGame(): GameField = {
+    println("Creating new game")
     val field = GameField.defaultField()
     val game = Game(None, "active", LocalDateTime.now())
     val createdGame = gameRepository.create(game).unsafeRunSync()
+    println(s"Created new game with ID: ${createdGame.id}")
     currentGameId = createdGame.id
+    println(s"Set current game ID to: $currentGameId")
     field
   }
 
   override def getCurrentGame(): GameField = {
+    println(s"Getting current game state for ID: $currentGameId")
     currentGameId match {
       case Some(id) =>
         val moves = moveRepository.findAll().unsafeRunSync()
           .filter(_.gameid == id)
+        println(s"Found ${moves.length} moves for current game")
         GameField.fromMoves(moves)
       case None =>
-        GameField.defaultField()
+        println("No current game found, creating a new game")
+        createGame()
     }
   }
 
@@ -77,7 +91,9 @@ class GameServiceImpl(
   }
 
   override def makeMove(gameid: Long, playerid: Long, x: Int, y: Int, color: String): Either[String, Move] = {
+    println(s"Attempting to make move: gameId=$gameid, playerId=$playerid, x=$x, y=$y, color=$color")
     if (x < 0 || x >= GameField.DefaultWidth || y < 0 || y >= GameField.DefaultHeight) {
+      println("Invalid coordinates")
       Left("Invalid coordinates")
     } else {
       val move = Move(
@@ -91,9 +107,13 @@ class GameServiceImpl(
       )
       
       try {
-        Right(moveRepository.create(move).unsafeRunSync())
+        val createdMove = moveRepository.create(move).unsafeRunSync()
+        println(s"Successfully created move: $createdMove")
+        Right(createdMove)
       } catch {
-        case e: Exception => Left(s"Failed to make move: ${e.getMessage}")
+        case e: Exception => 
+          println(s"Failed to create move: ${e.getMessage}")
+          Left(s"Failed to make move: ${e.getMessage}")
       }
     }
   }

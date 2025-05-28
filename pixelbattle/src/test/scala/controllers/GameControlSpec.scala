@@ -104,4 +104,5 @@ class GameControlSpec extends AnyWordSpec with Matchers with ScalatestRouteTest 
       }
     }
   }
-} 
+}
+

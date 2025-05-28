@@ -36,9 +36,27 @@ class UserServiceImpl(userRepository: UserRepository) extends UserService {
       case None =>
         try {
           val user = User(None, name, email, passwordHash)
-          Right(userRepository.create(user).unsafeRunSync())
+          println(s"Attempting to create user: $user")
+          val createdUser = userRepository.create(user).unsafeRunSync()
+          println(s"Successfully created user: $createdUser")
+          
+          // Verify the user was actually saved in the database
+          val verificationResult = userRepository.findById(createdUser.id).unsafeRunSync()
+          println(s"Database verification result: ${verificationResult}")
+          
+          verificationResult match {
+            case Some(dbUser) => 
+              println(s"User found in database: $dbUser")
+              Right(createdUser)
+            case None => 
+              println("WARNING: User was not found in database after creation!")
+              Left("User creation failed: Unable to verify user in database")
+          }
         } catch {
-          case e: Exception => Left(s"Failed to register user: ${e.getMessage}")
+          case e: Exception => 
+            println(s"Failed to register user: ${e.getMessage}")
+            e.printStackTrace()
+            Left(s"Failed to register user: ${e.getMessage}")
         }
     }
   }

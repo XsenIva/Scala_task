@@ -1,9 +1,11 @@
-package db
+package repository
 import cats.effect.{IO, Resource}
 import doobie.hikari.HikariTransactor
 import doobie.util.ExecutionContexts
 
-object Database {
+trait TestitTransactor {
+  def setupDatabase(xa: HikariTransactor[IO]): IO[Unit]
+
   def transactor: Resource[IO, HikariTransactor[IO]] = {
     for {
       ec <- ExecutionContexts.fixedThreadPool[IO](size = 10)
@@ -16,4 +18,4 @@ object Database {
       )
     } yield xa
   }
-}
+} 

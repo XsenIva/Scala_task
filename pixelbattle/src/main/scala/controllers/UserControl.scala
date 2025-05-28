@@ -30,9 +30,15 @@ class PlayerRoutes(gameService: GameService, userService: UserService) {
       path("register") {
         post {
           entity(as[RegisterRequest]) { request =>
+            println(s"Received registration request: username=${request.username}, email=${request.email}")
+            println(s"Full request data: $request")
             onSuccess(Future.successful(userService.registerUser(request.username, request.email, request.password))) {
-              case Right(user) => complete(StatusCodes.Created -> user.asJson)
-              case Left(error) => complete(StatusCodes.BadRequest -> ValidateRequest(false, error).asJson)
+              case Right(user) => 
+                println(s"Registration successful: $user")
+                complete(StatusCodes.Created -> user.asJson)
+              case Left(error) => 
+                println(s"Registration failed with error: $error")
+                complete(StatusCodes.BadRequest -> ValidateRequest(false, error).asJson)
             }
           }
         }

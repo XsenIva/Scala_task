@@ -52,6 +52,9 @@ lazy val root = project
       "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
       "com.typesafe.akka" %% "akka-protobuf-v3" % akkaVersion,
 
+      // CORS support
+      "ch.megard" %% "akka-http-cors" % "1.2.0",
+
       // Circe
       "io.circe" %% "circe-core" % circeVersion,
       "io.circe" %% "circe-generic" % circeVersion,

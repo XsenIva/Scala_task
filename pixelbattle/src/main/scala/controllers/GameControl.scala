@@ -43,20 +43,31 @@ class GameRoutes(gameService: GameService) {
       path("pixel") {
         post {
           handleExceptions(ExceptionHandler {
-            case _: NumberFormatException =>
+            case e: NumberFormatException =>
+              println(s"Number format exception: ${e.getMessage}")
               complete(StatusCodes.BadRequest -> "Invalid parameters")
           }) {
             parameters("x".as[Int], "y".as[Int], "color", "player_id".as[Long]) { (x, y, color, playerId) =>
+              println(s"Received pixel placement request: x=$x, y=$y, color=$color, playerId=$playerId")
               currentGameId match {
                 case Some(gameId) =>
+                  println(s"Current game ID: $gameId")
                   onSuccess(Future.successful(gameService.makeMove(gameId, playerId, x, y, color))) {
-                    case Right(updatedMove) => complete(StatusCodes.OK -> updatedMove.asJson)
-                    case Left(error) => complete(StatusCodes.BadRequest -> error)
+                    case Right(updatedMove) => 
+                      println(s"Successfully placed pixel: $updatedMove")
+                      complete(StatusCodes.OK -> updatedMove.asJson)
+                    case Left(error) => 
+                      println(s"Failed to place pixel: $error")
+                      complete(StatusCodes.BadRequest -> error)
                   }
                 case None =>
+                  println("No active game found")
                   complete(StatusCodes.NotFound -> "No active game found")
               }
-            } ~ complete(StatusCodes.BadRequest -> "Missing or invalid parameters")
+            } ~ {
+              println("Missing or invalid parameters in request")
+              complete(StatusCodes.BadRequest -> "Missing or invalid parameters")
+            }
           }
         }
       }
